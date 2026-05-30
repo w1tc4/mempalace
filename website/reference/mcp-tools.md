@@ -393,3 +393,13 @@ Force a reconnect to the palace database. Use this after external scripts or CLI
 **Parameters:** None
 
 **Returns:** `{ success, message, drawers, vector_disabled[, vector_disabled_reason] }` (on no-palace: `{ success: false, message, drawers, vector_disabled }`; on exception: `{ success: false, error }`)
+
+### `mempalace_resume`
+
+Resume the last session. Returns the last-session summary (written automatically by the Stop hook) and the 3 most recent diary checkpoints in one call — no arguments needed.
+
+Call this when the user says "resume", "pick up where we left off", or similar. It is the fastest way to get oriented at the start of a session without reading the whole palace.
+
+**Parameters:** None
+
+**Returns:** `{ last_session, recent_checkpoints }` where `last_session` is a markdown string (date, topics, message count) or `null` if no save has fired yet, and `recent_checkpoints` is an array of diary entries. Returns `{ message }` if no previous session exists.

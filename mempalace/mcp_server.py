@@ -1962,6 +1962,37 @@ def tool_reconnect():
         return {"success": False, "error": str(e)}
 
 
+def tool_resume():
+    """
+    Load context to resume the last session in one call — returns the last-session
+    summary plus the 3 most recent diary checkpoints. No arguments needed.
+
+    Call this whenever the user says 'resume', 'pick up where we left off',
+    or similar. It is the fastest way to get oriented without reading the whole palace.
+    """
+    result = {}
+
+    # Read last-session.md written by the Stop hook after each save
+    try:
+        config = MempalaceConfig()
+        last_session_path = Path(config.palace_path) / "last-session.md"
+        if last_session_path.is_file():
+            result["last_session"] = last_session_path.read_text(encoding="utf-8").strip()
+        else:
+            result["last_session"] = None
+    except Exception:
+        result["last_session"] = None
+
+    # Pull last 3 diary checkpoints written by hooks
+    diary = tool_diary_read(agent_name="session-hook", last_n=3)
+    result["recent_checkpoints"] = diary.get("entries", [])
+
+    if result["last_session"] is None and not result["recent_checkpoints"]:
+        return {"message": "No previous session found — looks like a fresh start!"}
+
+    return result
+
+
 # ==================== MCP PROTOCOL ====================
 
 TOOLS = {
@@ -2417,6 +2448,16 @@ TOOLS = {
             "properties": {},
         },
         "handler": tool_reconnect,
+    },
+    "mempalace_resume": {
+        "description": (
+            "Resume the last session. Returns the last-session summary and the 3 most recent"
+            " diary checkpoints in one call — no arguments needed. Call this when the user"
+            " says 'resume', 'pick up where we left off', or similar. Fastest way to get"
+            " oriented at the start of a session without reading the whole palace."
+        ),
+        "input_schema": {"type": "object", "properties": {}},
+        "handler": tool_resume,
     },
 }
 

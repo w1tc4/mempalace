@@ -46,6 +46,23 @@ AI memory system. Store everything, find anything. Local, free, no API key.
 ### Agent Diary
 - mempalace_diary_write -- Write a diary entry
 - mempalace_diary_read -- Read diary entries
+- mempalace_resume -- Resume the last session (last-session summary + recent checkpoints)
+
+---
+
+## Resuming a Session
+
+Say **"resume"** in any AI that has the MemPalace MCP connected. The AI should call
+`mempalace_resume`, which returns in one shot:
+
+1. `last_session` — a compact summary (date, topics, message count) auto-written by the
+   Stop hook at the end of every session that triggers a save.
+2. `recent_checkpoints` — the 3 most recent diary entries, for more detail if needed.
+
+No arguments, no prompting, no reading the whole palace.
+
+Note: `last-session.md` is written to `{palace_path}/last-session.md` after each auto-save.
+It will be absent until the first auto-save fires (every 15 messages by default).
 
 ---
 

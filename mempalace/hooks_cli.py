@@ -646,6 +646,29 @@ def _extract_themes(messages: list[str], max_themes: int = 3) -> list[str]:
     return [w for w, _ in words.most_common(max_themes)]
 
 
+def _write_last_session(themes: list, msg_count: int) -> None:
+    """Write a compact last-session.md to the palace root for cross-AI resuming."""
+    try:
+        config = MempalaceConfig()
+        palace_path = Path(config.palace_path)
+        if not palace_path.is_dir():
+            return
+        from datetime import datetime as _dt
+        now = _dt.now()
+        topic_line = ", ".join(themes) if themes else "general"
+        content = (
+            f"# Last Session\n"
+            f"## {now.strftime('%Y-%m-%d %H:%M')}\n"
+            f"Worked on: {topic_line}\n"
+            f"Messages: {msg_count}\n"
+        )
+        last_session_file = palace_path / "last-session.md"
+        last_session_file.write_text(content, encoding="utf-8")
+        _log(f"last-session.md written to {last_session_file}")
+    except Exception as e:
+        _log(f"WARNING: could not write last-session.md: {e}")
+
+
 def _save_diary_direct(
     transcript_path: str,
     session_id: str,
@@ -958,6 +981,7 @@ def hook_stop(data: dict, harness: str):
                     tag = " \u2014 " + ", ".join(themes)
                 else:
                     tag = ""
+                _write_last_session(themes, count)
                 _output(
                     {
                         "systemMessage": f"\u2726 {count} memories woven into the palace{tag}",
